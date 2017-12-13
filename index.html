@@ -157,11 +157,21 @@
       console.log(childSnapshot.val().comment);
       console.log(childSnapshot.val().joinDate);
 
+
+
+
       // full list of items to the well
-      $("#full-member-list").append("<div class='well'><span class='member-name'> " + childSnapshot.val().name +
-        " </span><span class='member-email'> " + childSnapshot.val().email +
-        " </span><span class='member-age'> " + childSnapshot.val().age +
-        " </span><span class='member-comment'> " + childSnapshot.val().comment + " </span></div>");
+      $("#full-member-list").append("<div class='well " + childSnapshot.key + "'>" +
+        " <div class='row'>" +
+        " <div class='col-xs-8 col-sm-10'>" +
+        " <span class='member-name'> " + childSnapshot.val().name +
+        " </span> <span class='member-email'> " + childSnapshot.val().email +
+        " </span> <span class='member-age'> " + childSnapshot.val().age +
+        " </span> <span class='member-comment'> " + childSnapshot.val().comment + " </span></div>" +
+        " <div class='col-xs-2 col-sm-1'><button data-key='" + childSnapshot.key + "' class='updateMember btn btn-default btn-xs'>Update</button></div>" +
+        " <div class='col-xs-2 col-sm-1'><button data-key='" + childSnapshot.key + "' class='deleteMember btn btn-danger btn-xs'>Delete</button></div>" +
+        "</div>" +
+        "</div>");
 
     // Handle the errors
     }, function(errorObject) {
@@ -183,6 +193,23 @@
      * ADD DELETE MEMBER CODE HERE
      **/
 
+
+     /**
+       * DELETE A MEMBER
+       **/
+       $(document).on("click", ".deleteMember", function() {
+         var key = $(this).data('key');
+         dataRef.ref(key).remove();
+       });
+
+       // Firebase watcher for removing members
+       dataRef.ref().on("child_removed", function(childSnapshot) {
+       // Delete the well containing the member's info.  The well is identified by the key in the class attribute.
+       $("." + childSnapshot.key).remove();
+       // Handle the errors
+       }, function(errorObject) {
+         console.log("Errors handled: " + errorObject.code);
+       });
     //  -------------------------------------------------------  //
 
     /**
@@ -195,4 +222,3 @@
   </body>
 
 </html>
-
