@@ -135,15 +135,33 @@
       age = $("#age-input").val().trim();
       comment = $("#comment-input").val().trim();
 
-      // Code for the push
-      dataRef.ref().push({
-
+      if ($("#memberToUpdate").data('key')) {
+        // Update member in Firebase
+        var userRef = $("#memberToUpdate").data('key');
+        dataRef.ref(userRef).update({
         name: name,
         email: email,
         age: age,
         comment: comment,
-        dateAdded: firebase.database.ServerValue.TIMESTAMP
+        dateUpdated: firebase.database.ServerValue.TIMESTAMP
       });
+
+      // Reset button text from "Update" to "Submit"
+      $("#add-user").html("Submit");
+      } else {
+        //Add a member to Firebase
+        dataRef.ref().push({
+          name: name,
+          email: email,
+          age: age,
+          comment: comment,
+          dateAdded: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
+
+      //clear input fields 
+      $(".user-input").val('');
+      $("#name-input").focus(); //put cursor in name field for new input
     });
 
     // Firebase watcher + initial loader HINT: This code behaves similarly to .on("value")
@@ -215,6 +233,47 @@
     /**
     * ADD UPDATE MEMBER CODE HERE
     **/
+
+    /**
+     * UPDATE A MEMBER
+     */
+     $(document).on("click", ".updateMember", function() {
+      var key = $(this).data('key');
+      // Populate the form input fields with the values from the selected well.
+      $("#name-input").val($("." + key).find(".member-name").text());
+      $("#email-input").val($("." + key).find(".member-email").text());
+
+      // Age input only accepts a number, so change the text string into a number with parseInt()
+      $("#age-input").val(parseInt($("." + key).find(".member-age").text()));
+
+      $("#comment-input").val($("." + key).find(".member-comment").text());
+
+      // Change the "Submit" button to "Update"
+      $("#add-user").html('Update');
+
+      // Add a hidden field so we can identify which child to update in Firebase.
+      $("form").append("<input type='hidden' id='memberToUpdate' data-key='" + key + "'>");
+      
+      // Return the focus to the name field so the user can begin making changes 
+      $("#name-input").focus();
+    });
+
+    dataRef.ref().on("child_changed", function(childSnapshot) {
+      //clear input fields 
+      $(".user-input").val('');
+
+      // Put cursor in name field to accept new input
+      $("#name-input").focus(); 
+
+      // Updaate the well with the new data.
+      $("." + childSnapshot.key).find('.member-name').text(childSnapshot.val().name);
+      $("." + childSnapshot.key).find('.member-email').text(childSnapshot.val().email);
+      $("." + childSnapshot.key).find('.member-age').text(childSnapshot.val().age);
+      $("." + childSnapshot.key).find('.member-comment').text(childSnapshot.val().comment);
+      
+      // Remove the hidden field from the form
+      $("#memberToUpdate").remove();
+    })
 
     //  -------------------------------------------------------  //
     </script>
